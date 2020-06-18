@@ -1,0 +1,388 @@
+% !TEX encoding = Windows Cyrillic
+\documentclass[12pt]{article}
+\pagestyle{plain}
+
+\usepackage{amsmath,amssymb,amsthm,amsfonts,amscd,array,graphicx}
+\usepackage{amsthm}
+\usepackage{graphicx}
+ \graphicspath{{pictures/}}
+ \DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+\usepackage[T2A]{fontenc}
+\usepackage[cp1251]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{mathtools}
+\usepackage{cmap}
+\usepackage{hyperref}
+
+\usepackage[left=3cm,right=3cm, top=3cm, bottom=3cm, bindingoffset=0cm]{geometry}
+
+\DeclareMathOperator*{\argmax}{argmax}
+
+\theoremstyle{definition}
+\newtheorem{exercise}{Задача}
+\newtheorem{defin}{Определение}
+
+\theoremstyle{theorem}
+\newtheorem{theorem}{Теорема}
+\newtheorem{propos}[theorem]{Утверждение}
+\newtheorem{cor}[theorem]{Следствие}
+\newtheorem{lem}[theorem]{Лемма}
+\newtheorem{remark}[theorem]{Замечание}
+\newtheorem{quest}[theorem]{Вопрос}
+
+\title{Отчёт по дифференциальным уравнениям \\ Задача №3}
+
+\begin{document}
+
+\maketitle
+
+\section{Постановка задачи}
+
+Для Задачи Коши уравнения теплопроводности:
+
+\begin{equation}\label{main_ode}
+\begin{cases}
+u_t(t,x) - u_{xx}(t,x) + b(x)u(t,x) = f(t,x), (t,x) \in [0,1] \times [0,1], b(x) \geq 0, \\
+u(t,0) = u_x(t,1) = 0, u(0,x) = u^0(x)
+\end{cases}
+\end{equation}
+на равномерной сетке
+\begin{equation*}
+\bar{D}_{h,\tau} = \{ x_m = mh - \frac{h}{2}; ~m = 0, \dots, M; ~x_M = 1\}\times\{t_n = n\tau; ~n = 0, \dots, N; ~N\tau = T\}.
+\end{equation*}
+построить явную схему, неявную схему и схему Кранка-Николсон. Найти порядок аппроксимации, доказать устойчивость, обосновать сходимость. На примерах задач с известным решением подтвердить теоретические выкладки численными расчётами.
+
+\section{Явная схема}
+\subsection{Теоретическое обоснование}
+
+Будем приближать дифференциальную задачу разностной схемой
+\begin{equation}\label{explicit}
+\begin{dcases}
+\frac{u^{n+1}_m - u^n_m}{\tau} - \frac{u^n_{m+1} - 2u^n_{m} + u^n_{m-1}}{h^2} + b_m u^n_m = f^n_m, ~n = \overline{0, N-1}, ~m = \overline{1, M-1}; \\
+u^n_0 = -u^n_1, ~n = \overline{0, N};~~u^0_m = u^0(x_m), ~m = \overline{0, M}; \\
+\frac{u^{n}_M - u^{n}_{M-1}}{h} = -\frac{h}{2} (\frac{u^{n+1}_M - u^{n}_M}{\tau} + b_M u^{n}_M - f^{n}_M), ~n = \overline{1, N},
+\end{dcases}
+\end{equation}
+где $b_m = b(x_m)$ и $f^n_m = f(t_n, x_m)$.
+
+\begin{theorem}
+Разностная схема \eqref{explicit} аппроксимирует дифференциальную задачу \eqref{main_ode} на решении с порядком $O(\tau + h^2)$.
+\end{theorem}
+\begin{proof}
+В выражении 
+\begin{equation*}
+~\frac{u(t_{n+1}, x_m) - u(t_n,x_m)}{\tau} - \frac{u(t_n, x_{m+1}) - 2u(t_n, x_{m}) + u(t_n, x_{m-1})}{h^2} + b_m u(t_n, x_m) - f^n_m =
+\end{equation*}
+будем раскладывать все функции в ряд Тейлора в точке $(t_n, x_m)$.
+\begin{flalign*}
+&~~u(t_{n+1}, x_m) - u(t_n,x_m) = u_t(t_n,x_m)\tau + O(\tau^2)& \\
+&~~u(t_n, x_{m+1}) - 2u(t_n, x_{m}) + u(t_n, x_{m-1}) = 2u_{xx}(t_n,x_m)\frac{h^2}{2} + O(h^4) &
+\end{flalign*}
+Продолжая равенство, получаем:
+\begin{flalign*}
+&~= u_t(t_n,x_m) + O(\tau) - u_{xx}(t_n,x_m) + O(h^2) + b(x_m)u(t_n,x_m) - f(t_n,x_m) = &\\
+&~= u_t(t_n,x_m) - u_{xx}(t_n,x_m) + b(x_m)u(t_n,x_m) - f(t_n,x_m) + O(\tau + h^2) = &\\
+&~= O(\tau + h^2)&
+\end{flalign*}
+Два краевых, снизу и слева, точные: $~u^n_0 = -u^n_1, ~n = \overline{0, N};~~u^0_m = u^0(x_m), ~m = \overline{0, M}$. Третье условие выведем с самого начала. Пусть оно имеет вид
+\begin{equation*}
+\frac{u^{n}_M - u^{n}_{M-1}}{h} = \delta.
+\end{equation*}
+Подберём $\delta$ так, чтобы присутствовал нужный порядок.
+\begin{flalign*}
+&~\frac{u(t_{n}, x_{M}) - u(t_{n},x_{M-1})}{h} - \delta = u_x(t_{n},x_M) - u_{xx}(t_{n},x_M)\frac{h}{2} + O(h^2) - \delta = \\
+&~= 0 - \frac{h}{2} (u_t(t_{n}, x_M) + b(x_M)u(t_{n},x_M) - f(t_{n}, x_M)) + O(h^2) - \delta = \\
+&~= -\frac{h}{2} (\frac{u(t_{n+1}, x_M) - u(t_{n}, x_M)}{\tau} + O(\tau) + b(x_M)u(t_{n},x_M) - f(t_{n}, x_M)) + O(h^2) - \delta = \\
+&~= -\frac{h}{2} (\frac{u(t_{n+1}, x_M) - u(t_{n}, x_M)}{\tau} + b(x_M)u(t_{n},x_M) - f(t_{n}, x_M)) + O(\tau h) + O(h^2) - \delta
+\end{flalign*}
+Воспользовавшись неравенством $\frac{\tau^2 + h^2}{2} \geq \tau h$, легко видеть, что если взять
+\begin{equation*}
+\delta = -\frac{h}{2} (\frac{u^{n+1}_M - u^{n}_M}{\tau} + b_M u^{n}_M - f^{n}_M),
+\end{equation*}
+то мы получим приближение порядка $O(\tau^2 + h^2)$, что даже больше, чем нам сейчас нужно.
+\end{proof}
+
+\begin{defin}
+Разностная схема \textit{устойчива в равномерной метрике}, если имеет место неравенство:
+\begin{flalign*}
+&\max\limits_{0 \leq n \leq N} \| u^n \| \leq \| u^0 \| + c \max\limits_{0 \leq n \leq N} \| f^n \|, \\
+&~~\text{где}~ \| u^n \| =  \max\limits_{0 \leq m \leq M} |u^n_m|
+\end{flalign*}
+\end{defin}
+
+\begin{theorem}
+Явная разностная схема \eqref{explicit} устойчива в равномерной метрике, если выполнено условие 
+\begin{equation*}
+\frac{2\tau}{h^2} + \max\limits_{x \in [0,1]}(\tau \cdot b(x)) \leq 1
+\end{equation*}
+\end{theorem}
+\begin{proof}
+Введём обозначение $\rho = \frac{\tau}{h^2}$ и перепишем схему в более удобном виде:
+\begin{flalign*}
+u^{n+1}_m = \rho (u^n_{m+1} - 2u^n_{m} + u^n_{m-1}) - \tau b_m u^n_{m} + \tau f^n_m + u^n_{m} = \\
+= (1 - 2\rho - \tau b_m)u^n_m + \rho (u^n_{m+1} + u^n_{m-1}) + \tau f^n_m
+\end{flalign*}
+Тогда для норм векторов при выполнении условия $2\rho + \max\limits_{x \in [0,1]}(\tau \cdot b(x)) \leq 1$ имеем:
+\begin{flalign*}
+\| u^{n+1} \| &\leq \max\limits_m (1 - 2\rho - \tau b_m) \cdot \| u^n \| + 2\rho \| u^n \| + \tau \| f^n \| = \\
+&= \max\limits_m (1 - \tau b_m) \cdot \| u^n \| + \tau \| f^n \| \leq \| u^n \| + \tau \| f^n \| \leq \dots \\
+&\leq \| u^0 \| + \tau (\| f^n \| + \dots + \| f^0 \| ) \leq  \| u^0 \| + (n+1) \tau \max\limits_{0 \leq k \leq n}\| f^k \|
+\end{flalign*}
+Если максимум достигается на граничной точке с номером $M$, то всё можно расписать так же. Заметим, что $(n+1)\tau = n\tau + \tau \leq T + \tau$, то есть можем с запасом положить константу $c = 2T$. Получили устойчивость по определению.
+\end{proof}
+
+Значит, по теореме Филиппова, разностная схема \eqref{explicit} сходится к решению исходной дифференциальной задачи \eqref{main_ode} с порядком $O(\tau + h^2)$.
+
+
+\subsection{Алгоритм решения}
+Нулевой слой $(N = 0)$ у нас задан функцией $u^0(x)$. Алгоритм основан на последовательном переходе от одного слоя по $t$ к следующему. Необходимо составить $М$ уравнений на переход. Уравнения для точек с номерами $0$ и $M$ получим из краевых условий, остальные из основного уравнения схемы:
+\begin{flalign*}
+&~~u^{n+1}_0 = 0, ~u^{n+1}_M = -\frac{2\tau}{h^2}(u^n_M - u^n_{M-1}) - \tau b_M u^n_M + \tau f^n_M + u^n_{M} \\
+&~~u^{n+1}_m = \frac{\tau}{h^2} (u^n_{m+1} - 2u^n_{m} + u^n_{m-1}) - \tau b_m u^n_{m} + \tau f^n_m + u^n_{m}, ~m = \overline{1, M-1}.
+\end{flalign*}
+И таким образом шаг за шагом вычислим все слои по $t$, попутно записывая их в файл. В конце обратно прочитаем их из файла и посчитаем норму ошибки.
+
+\subsection{Описание работы программы}
+Для работы программы будем использовать два массива: \textbf{u} для значений, вычисленных на предыдущем шаге, и \textbf{u\_next} для значений, которые вычисляем сейчас. В конце каждого шага меняем местами ссылки на эти массивы, чтобы текущие значения стали "прошлыми" для следующего шага.
+\newline
+\newline
+Заполняем массив \textbf{u} краевыми значениями при $t = 0$, затем запускаем в цикле функцию \textbf{step\_implicit}, которая делает "шаг" от одного слоя к следующему по формулам из предыдущего раздела. В конце каждой итерации записываем значения в файл \textbf{output.txt}. После этого считаем ошибку как максимум модуля по всем узлам и выводим на экран её, делённую на $\tau + h^2$. 
+\newline
+При нужном соотношении $\tau$ и $h$ мы получим сходимость.
+\newline
+Все три алгоритма я объединил в одну программу с тремя функциями step. Переключаться между ними можно, комментируя и раскомментируя step'ы в середине кода. Значения M, N тоже задаются прописыванием вручную.
+
+\subsection{Численные результаты}
+Проверку производил на функциях:
+\begin{flalign*}
+&b(x) = x; ~f(x) = 2tx(2-x) + 2t^2 + b(x) u(t, x); \\
+&u(t,x) = e^{-t\frac{\pi^2}{4}} sin(\frac{\pi x}{2}) + t^2x(2-x);
+\end{flalign*}
+То есть постановка задачи:
+\begin{flalign*}
+u_t(t,x) - u_{xx}(t,x) + xu(t,x) = 2tx(2-x) + 2t^2 + xu(t, x)
+\end{flalign*}
+График поведения отклонения в равномерной метрике, поделенного на $(\tau + h^2)$, в зависимости от $M$ при $N = \frac{(2M -1)^2}{2}$:
+\newline
+\newline
+\includegraphics[scale = 0.54]{explicit}
+
+
+
+
+
+
+\section{Неявная схема}
+
+\subsection{Теоретическое обоснование}
+Теперь схема выглядит так:
+\begin{equation}\label{implicit}
+\begin{dcases}
+\frac{u^{n+1}_m - u^n_m}{\tau} - \frac{u^{n+1}_{m+1} - 2u^{n+1}_{m} + u^{n+1}_{m-1}}{h^2} + b_m u^{n+1}_m = f^{n+1}_m; \\
+u^n_0 = -u^n_1, ~n = \overline{0, N};~~u^0_m = u^0(x_m), ~m = \overline{0, M}; \\
+\frac{u^{n+1}_M - u^{n+1}_{M-1}}{h} = -\frac{h}{2} (\frac{u^{n+1}_M - u^{n}_M}{\tau} + b_M u^{n+1}_M - f^{n+1}_M), ~n = \overline{1, N},
+\end{dcases}
+\end{equation}
+где $b_m = b(x_m)$ и $f^n_m = f(t_n, x_m)$.
+
+\begin{theorem}
+Разностная схема \eqref{implicit} аппроксимирует дифференциальную задачу \eqref{main_ode} на решении с порядком $O(\tau + h^2)$.
+\end{theorem}
+\begin{proof}
+Доказательство почти дословно повторяет доказательство для явной схемы, только раскладываем в точке $(t_{n+1}, x_m)$, не буду переписывать.
+\end{proof}
+
+\begin{theorem}
+Полностью неявная схема \eqref{implicit} устойчива в равномерной метрике при любых значениях $\tau$ и $h$.
+\end{theorem}
+\begin{proof}
+Снова положим $\rho = \frac{\tau}{h^2}$. В данном случае удобная для анализа форма записи имеет вид
+\begin{equation*}
+(1 + \tau b_m) u^{n+1}_m + \rho ( -u^{n+1}_{m+1} + 2u^{n+1}_m -u^{n+1}_{m-1}) = u^n_m + \tau f^{n+1}_m
+\end{equation*}
+Из всех значений $u^{n+1}_m$, по модулю равных $\| u^{n+1} \|$, выберем такое, у которого индекс $m$ принимает наименьшее значение. В силу граничных условий, $m \geq 1$. Также пока будем считать, что $m \leq M-1$. В этом случае имеем:
+\begin{flalign*}
+| u^{n+1}_{m} | > |u^{n+1}_{m-1} |~~~~\text{и}~~~~| u^{n+1}_{m} | \geq |u^{n+1}_{m+1} |.
+\end{flalign*}
+Отсюда $|2u^{n+1}_{m} | > (|u^{n+1}_{m+1}| + |u^{n+1}_{m-1} |)$, и знак выражения $2u^{n+1}_{m} - u^{n+1}_{m+1} - u^{n+1}_{m-1}$ совпадает со знаком $u^{n+1}_{m}$, т.е.
+\begin{flalign*}
+\| u^{n+1} \| = |u^{n+1}_{m} | < |(1 + \tau b_m) u^{n+1}_m + \rho (2u^{n+1}_m -u^{n+1}_{m+1} -u^{n+1}_{m-1})| = |u^n_m + \tau f^{n+1}_m| \leq \\
+\leq |u^n_m| + |\tau f^{n+1}_m| \leq \| u^n \| + \tau \| f^{n+1} \|
+\end{flalign*}
+Дальнейшее доказательство повторяет доказательство для явной схемы. Если же значение нормы достигается только на точке $u^{n+1}_{M}$, то можно аналогично расписать не схему в промежуточных точках, а краевое условие, и получить то же самое.
+\end{proof}
+
+Следовательно, по теореме Филиппова, разностная схема \eqref{implicit} сходится к решению исходной дифференциальной задачи \eqref{main_ode} с порядком $O(\tau + h^2)$.
+
+
+\subsection{Алгоритм решения}
+Здесь не получится так же посчитать по формулам, как в явном случае. Поэтому перепишем уравнения разностной схемы так, чтобы потом проще было представить их в виде матрицы:
+\begin{flalign*}
+&~~u^{n+1}_0 + u^{n+1}_1 = 0 \\
+&-\frac{1}{h^2}u^{n+1}_{m+1} + (\frac{2}{h^2} + \frac{1}{\tau} + b_m)u^{n+1}_{m} - \frac{1}{h^2}u^{n+1}_{m-1}  = f^{n+1}_m + \frac{u^n_m}{\tau} \\
+& -\frac{2}{h^2}u^{n+1}_{M-1} + (\frac{2}{h^2} + \frac{1}{\tau} + b_M)u^{n+1}_M = f^{n+1}_M + \frac{u^n_M}{\tau}
+\end{flalign*}
+Легко видеть, что это СЛУ с трёхдиагональной матрицей. Решим её методом прогонки и тем самым перейдём на следующий слой по $t$.
+
+
+\subsection{Описание работы программы}
+
+Всё то же самое, что в явной, только переход от предыдущего шага к следующему делает функция \textbf{step\_implicit}, которая работает по алгоритму, описанному выше. Прогонку выполняет функция \textbf{solver\_progonka}. 
+
+
+\subsection{Численные результаты}
+Проверку производил на тех же самых функциях, что и в явной функции. Постановка задачи:
+\begin{flalign*}
+u_t(t,x) - u_{xx}(t,x) + xu(t,x) = 2tx(2-x) + 2t^2 + xu(t, x)
+\end{flalign*}
+График поведения отклонения полученного решения от настоящего в равномерной метрике, поделенного на $(\tau + h^2)$, в зависимости от $M$ при $N = M$:
+\newline
+\newline
+\includegraphics[scale = 0.47]{implicit}
+
+
+
+
+\section{Схема Кранка-Николсон}
+
+\subsection{Теоретическое обоснование}
+Эта схема является полусуммой явной и неявной.
+\begin{equation}\label{kranka}
+\begin{dcases}
+\frac{u^{n+1}_m - u^n_m}{\tau} - \frac{u^{n+1}_{m+1} - 2u^{n+1}_{m} + u^{n+1}_{m-1}}{2h^2} - \frac{u^n_{m+1} - 2u^n_{m} + u^n_{m-1}}{2h^2} + \frac{b_m}{2}(u^n_m +  u^{n+1}_m) = \frac{f^{n+1}_m + f^{n}_m}{2}; \\
+u^n_0 = -u^n_1, ~n = \overline{0, N};~~u^0_m = u^0(x_m), ~m = \overline{0, M}; \\
+\frac{u^{n+1}_M - u^{n+1}_{M-1}}{2h} + \frac{u^{n}_M - u^{n}_{M-1}}{2h} = -\frac{h}{2}\frac{u^{n+1}_M - u^{n}_M}{\tau} + \frac{hb_M}{4}(u^{n+1}_M + u^{n}_M) - \frac{h}{2}(f^{n+1}_M + f^{n}_M), ~n = \overline{1, N},
+\end{dcases}
+\end{equation}
+где $b_m = b(x_m)$ и $f^n_m = f(t_n, x_m)$.
+
+
+\begin{theorem}
+Разностная схема \eqref{kranka} аппроксимирует дифференциальную задачу \eqref{main_ode} на решении с порядком $O(\tau^2 + h^2)$.
+\end{theorem}
+\begin{proof}
+Теперь будем раскладывать функции не в точке $(t_n, x_m)$, а в точке $(t_n + \frac{\tau}{2}, x_m)$. порядок $O(h^2)$ у нас появлялся и в предыдущих ситуациях, а по $t$ мы берём точку между узлами, поэтому получается вытянуть бОльший порядок аппроксимации. Не буду даже пытаться здесь это расписать, слишком громоздко.
+\end{proof}
+
+Для доказательства устойчивости этой разностной схемы нам понадобится несколько вспомогательных утверждений.
+
+\begin{propos}
+Пусть для матрицы $A$ выполняется: $\langle Ax, y \rangle_* = \langle x, Ay \rangle_*$ относительно некоторого скалярного произведения $\langle \cdot , \cdot \rangle_*$. Тогда для собственных векторов матрицы $A$ выполняется
+\begin{equation*}
+\langle \varphi_i, \varphi_j \rangle_* = \delta_{ij}, ~~(\text{если}~ \lambda_i \neq \lambda_j).
+\end{equation*}
+\end{propos}
+\begin{proof}
+\begin{flalign*}
+\lambda_i \langle \varphi_i, \varphi_j \rangle_* = \langle \lambda_i\varphi_i, \varphi_j \rangle_* = \langle A\varphi_i, \varphi_j \rangle_* = \langle \varphi_i, A\varphi_j \rangle_* = \langle \varphi_i, \lambda_j\varphi_j \rangle_* = \lambda_j \langle \varphi_i, \varphi_j \rangle_*
+\end{flalign*}
+При $\lambda_i \neq \lambda_j$ это возможно, только если $\langle \varphi_i, \varphi_j \rangle_* = \delta_{ij}$.То есть, относительно этой нормы матрица становится "симметричной".
+\end{proof}
+
+\begin{propos}\label{utv7}
+Пусть задано скалярное произведение $\langle \cdot, \cdot \rangle_*$ и векторная норма, порождённая этим скалярным произведением: $\| x \|_* = \langle x, x \rangle_*^{1/2}$.
+Тогда для матрицы $A$, т.ч. $\langle Ax, y \rangle_* = \langle x, Ay \rangle_*$ выполняется
+\begin{equation*}
+\| A \|_* = \max\limits_k \lambda_k(A),
+\end{equation*}
+где матричная норма $\| \cdot \|_*$ порождена векторной, определённой выше. 
+\end{propos}
+\begin{proof}
+Возьмём произвольный вектор $x \neq 0$ и разложим его по базису, составленному из собственных векторов матрицы $A$:
+\begin{equation*}
+x = \sum\limits_{n=1}^{N} c_i \varphi_i
+\end{equation*}
+Тогда, используя предыдущее утверждение, получаем:
+\begin{equation*}
+\| A \|_* = \sup\limits_{x \neq 0} \frac{\| Ax \|}{\| x \|} = \sup \left ( \frac{\langle\sum c_i A\varphi_i, \sum c_i A\varphi_i\rangle}{\langle\sum c_i \varphi_i, \sum c_i \varphi_i\rangle} \right )^{1/2} =  \sup \left ( \frac{\sum c_i^2 \lambda_i^2}{\sum c_i^2} \right )^{1/2} = \max\limits_k |\lambda_k|
+\end{equation*}
+\end{proof}
+
+Для следующей теоремы будем использовать аналог нормы $\| \cdot \|_{L_{2,h}}$ (далее так и буду её и называть), порождённый скалярным произведением
+\begin{equation*}
+\langle x, y \rangle_* = \sum\limits_{n = 1}^{N-1} x_i y_i \cdot h + x_N y_N \cdot \frac{h}{2}
+\end{equation*}
+
+
+\begin{theorem}
+Схема Кранка-Николсон \eqref{kranka} устойчива в метрике $\| \cdot \|_{L_{2,h}}$ при любых значениях $\tau$ и $h$.
+\end{theorem}
+\begin{proof}
+Введём обозначение
+\begin{flalign*}
+\Lambda u_m = -\frac{u_{m+1} - 2u_m + u_{m-1}}{h^2}
+\end{flalign*}
+И теперь перепишем схему в соответствии с этим обозначением:
+\begin{flalign*}
+\frac{u^{n+1}_m - u^n_m}{\tau} + \frac{1}{2} \Lambda u^{n+1}_{m} + \frac{1}{2} \Lambda u^{n}_{m} + \frac{b_m}{2}(u^n_m +  u^{n+1}_m) = \frac{f^{n+1}_m + f^{n}_m}{2} \\
+(1 + \frac{\tau}{2}(\Lambda + b_m) ) u^{n+1}_m = (1 - \frac{\tau}{2}(\Lambda + b_m) ) u^{n}_m + \tau \frac{f^{n+1}_m + f^{n}_m}{2}.
+\end{flalign*}
+В матричном виде это запишется как
+\begin{flalign*}
+(I + \frac{\tau}{2}(\Lambda + B)) u^{n+1} = (I - \frac{\tau}{2}(\Lambda + B)) u^{n} + \frac{\tau}{2} (f^{n+1} + f^{n}),
+\end{flalign*}
+где $B = diag \{b_0, \dots, b_M \}$ и $\Lambda + B$ теперь представляет собой матрицу из задачи 2.1 при моих краевых условиях. Обозначу
+\begin{equation*}
+S_1 = (I + \frac{\tau}{2}(\Lambda + B)), ~~~S_2 = (I - \frac{\tau}{2}(\Lambda + B)).
+\end{equation*} 
+Вручную можно проверить, что матрица $\Lambda$ удовлетворяет условиям Утверждения \ref{utv7} со скалярным произведением, приведённым перед теоремой. Для матрицы $B$ и $I$ эти условия, очевидно, тоже выполняются. Следовательно, для матриц $S_1$ и $S_2$ это тоже верно, и норма для этих матриц равна максимальному собственному значению. Для обратных матриц это, аналогично, $1/\lambda_{min}$.
+
+Теперь выразим $u^{n+1}$ и возьмём норму от обеих частей
+\begin{equation}\label{norm}
+\| u^{n+1} \| \leq \|S_1^{-1} S_2 \| \| u^n \| + \frac{\tau}{2} \|S_1^{-1} \| (\| f^{n+1}\| + \|f^{n}\|)
+\end{equation}
+Собственные значения матрицы $\Lambda$ нам известны по предыдущим задачам курса. В моём случае это
+\begin{equation*}
+\lambda_k = \frac{4}{h^2} \sin^2 \frac{\pi (k+1/2)h}{2}
+\end{equation*}
+Далее, воспользуемся тем фактом, что матрица $(I + \beta \cdot A)$ имеет ту же систему собственных векторов, что и $A$. Тогда собственные значения матриц $S_1$ и $S_2$ это:
+\begin{equation*}
+\lambda_k = 1 \pm \frac{\tau}{2} (\frac{4}{h^2} \sin^2 \frac{\pi (k+1/2)h}{2} + b_k)
+\end{equation*}
+Тогда можем найти оценки для норм матриц, участвующих в соотношении \eqref{norm}:
+\begin{flalign*}
+\|S_1^{-1} \| = \frac{1}{\lambda_{\min}(S_1)} < 1, ~~~~  \| S_1^{-1}S_2 \| = \frac{\lambda_{\max}(S_2)}{\lambda_{\min}(S_1)} < 1
+\end{flalign*}
+Продолжим оценку в \eqref{norm}:
+\begin{flalign*}
+\| u^{n+1} \| \leq \|S_1^{-1} S_2 \| \| u^n \| + \frac{\tau}{2} \|S_1^{-1} \| (\| f^{n+1}\| + \|f^{n}\|) < \| u^n \| + \frac{\tau}{2} (\| f^{n+1}\| + \|f^{n}\|) < \\
+< \| u^{n-1} \| + \frac{\tau}{2} (\| f^{n}\| + \|f^{n-1}\|) + \frac{\tau}{2} (\| f^{n+1}\| + \|f^{n}\|) < \dots < \| u^0 \| + (n+1)\tau \max\limits_k \| f^k \|
+\end{flalign*}
+То есть, разностная схема устойчива относительно этой нормы вне зависимости от значений $\tau$ и $h$.
+\end{proof}
+
+
+Следовательно, по теореме Филиппова, разностная схема \eqref{kranka} сходится к решению исходной дифференциальной задачи \eqref{main_ode} с порядком $O(\tau^2 + h^2)$.
+
+\subsection{Алгоритм решения}
+Ситуация ровно как в неявной, только формулы сложнее. Перепишем уравнения разностной схемы так, чтобы потом проще было представить их в виде матрицы:
+\begin{flalign*}
+&~~u^{n+1}_0 + u^{n+1}_1 = 0 \\
+&-\frac{1}{2h^2}u^{n+1}_{m+1} + (\frac{1}{h^2} + \frac{1}{\tau} + \frac{b_m}{2})u^{n+1}_{m} - \frac{1}{2h^2}u^{n+1}_{m-1}  = \frac{u^n_{m+1} - 2u^n_{m} + u^n_{m-1}}{2h^2} + \frac{u^n_m}{\tau} - \frac{b_m}{2} u^n_m + \frac{f^{n+1}_m + f^{n}_m}{2}\\
+& -\frac{1}{h^2}u^{n+1}_{M-1} + (\frac{1}{h^2} + \frac{1}{\tau} + \frac{b_M}{2})u^{n+1}_M = \frac{f^{n+1}_M + f^{n}_M}{2} + (\frac{1}{\tau} - \frac{1}{h^2} - \frac{b_M}{2})u^n_M + \frac{u^n_{M-1}}{h^2}
+\end{flalign*}
+Легко видеть, что это СЛУ с трёхдиагональной матрицей. Решим её методом прогонки и тем самым перейдём на следующий слой по $t$.
+
+
+\subsection{Описание работы программы}
+
+Всё то же самое, что в явной, только переход от предыдущего шага к следующему делает функция \textbf{step\_kranka\_nikolson}, которая работает по алгоритму, описанному выше. Прогонку выполняет функция \textbf{solver\_progonka}. 
+\newline
+Отличие от двух предыдущих схем в подсчёте порядка сходимости: делим норму не на $(\tau +h^2)$, а на $(\tau^2 + h^2)$.
+\newline
+\newline
+В коде программы чтобы перейти к решению определённой разностной схемой: нужно раскомментировать функцию степ для этой схемы и закомментировать остальные. Так же нужно проверить, что в конце ошибка делится на то, что нужно в каждом конкретном случае.
+
+\subsection{Численные результаты}
+Проверку производил на всё тех же функциях, что и в самом начале. Постановка задачи:
+\begin{flalign*}
+u_t(t,x) - u_{xx}(t,x) + xu(t,x) = 2tx(2-x) + 2t^2 + xu(t, x)
+\end{flalign*}
+График поведения отклонения полученного решения от настоящего в равномерной метрике, поделенного на $(\tau^2 + h^2)$, в зависимости от $M$ при $N = M$:
+\newline
+\newline
+\includegraphics[scale = 0.54]{kranka}
+
+
+\end{document}

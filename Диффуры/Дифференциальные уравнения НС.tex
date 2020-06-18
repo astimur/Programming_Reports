@@ -1,0 +1,225 @@
+% !TEX encoding = Windows Cyrillic
+\documentclass[12pt]{article}
+\pagestyle{plain}
+
+\usepackage{amsmath,amssymb,amsthm,amsfonts,amscd,array}
+\usepackage{amsthm}
+\usepackage{graphicx}
+ \graphicspath{{pictures/}}
+ \DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+\usepackage[T2A]{fontenc}
+\usepackage[cp1251]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{mathtools}
+\usepackage{cmap}
+\usepackage{hyperref}
+
+\usepackage[left=3cm,right=3cm, top=3cm, bottom=3cm, bindingoffset=0cm]{geometry}
+
+\theoremstyle{definition}
+\newtheorem{exercise}{Задача}
+\newtheorem{defin}{Определение}
+
+\theoremstyle{theorem}
+\newtheorem{theorem}{Теорема}
+\newtheorem{propos}[theorem]{Утверждение}
+\newtheorem{cor}[theorem]{Следствие}
+\newtheorem{lem}[theorem]{Лемма}
+\newtheorem{remark}[theorem]{Замечание}
+\newtheorem{quest}[theorem]{Вопрос}
+
+\title{Отчёт по дифференциальным уравнениям \\ Задача №4}
+
+\author{Тимур Асылхузин}
+
+\begin{document}
+
+\date{}
+
+\maketitle
+
+\section{Постановка задачи}
+
+Требуется рассчитать конвективное движение жидкости в полости квадратного сечения при подогреве сбоку. Для этого следует совместно решить систему ДУЧП из уравнений Навье - Стокса в переменных "функция тока - вихрь скорости" и уравнения теплопроводности:
+\begin{equation}\label{main_ode}
+\begin{dcases}
+\dfrac{\partial \omega}{\partial t} = \nu \left ( \dfrac{\partial^2 \omega}{\partial x^2} + \dfrac{\partial^2 \omega}{\partial y^2} \right ) - \dfrac{\partial \omega}{\partial x} \dfrac{\partial \psi}{\partial y} + \dfrac{\partial \omega}{\partial y} \dfrac{\partial \psi}{\partial x} + G \dfrac{\partial T}{\partial x}, \\
+\dfrac{\partial T}{\partial t} = k \left ( \dfrac{\partial^2 T}{\partial x^2} + \dfrac{\partial^2 T}{\partial y^2} \right ) - \dfrac{\partial T}{\partial x} \dfrac{\partial \psi}{\partial y} + \dfrac{\partial T}{\partial y} \dfrac{\partial \psi}{\partial x} + \dfrac{q(x,y)}{\rho c}, \\
+~\omega = \dfrac{\partial^2 \psi}{\partial x^2} + \dfrac{\partial^2 \psi}{\partial y^2},
+\end{dcases}
+\end{equation}
+Краевые условия имеют вид
+\begin{equation*}
+\begin{dcases}
+T |_{\partial \Omega} = \omega |_{\partial \Omega} = \psi |_{\partial \Omega} = 0, \\
+T |_{t = 0} = T^0(x,y), ~\omega |_{t = 0} = \omega^0(x,y), ~\psi |_{t = 0} = \psi^0 (x,y),
+\end{dcases}
+\end{equation*}
+где $\Omega = [0,1]\times[0,1]$. Для этой задачи необходимо на равномерной сетке
+\begin{equation*}
+\bar{D}_{h_x, h_y,\tau} = \{ x_m = mh_x; ~m = \overline{0, M_x}\}\times \{ y_m = mh_y; ~m = \overline{0, M_y}\}\times\{t_n = n\tau; ~n = \overline{0, N}\}.
+\end{equation*}
+при $h_x = 1/M_x, ~hy = 1/M_y, ~\tau = T/N$ построить разностную схему. Найти порядок аппроксимации. На примерах задач с известным решением путём небольших изменений изначальной системы подтвердить теоретические выкладки численными расчётами.
+
+
+\section{Разностная схема}
+Будем приближать дифференциальную задачу разностной схемой
+\begin{flalign*}
+\frac{\omega^{n+1}_{ij} - \omega^{n}_{ij}}{\tau} &= \nu \left ( \frac{\omega^{n+1}_{i+1 j} - 2\omega^{n+1}_{ij} + \omega^{n+1}_{i-1 j}}{h_x^2} + \frac{\omega^{n+1}_{ij+1} - 2\omega^{n+1}_{ij} + \omega^{n+1}_{ij-1}}{h_y^2} \right ) - \\
+&- \frac{\omega^{n}_{i+1j} - \omega^{n}_{ij}}{h_x} \cdot \frac{\psi^{n}_{ij+1} - \psi^{n}_{ij}}{h_y} + \frac{\omega^{n}_{ij+1} - \omega^{n}_{ij}}{h_y} \cdot \frac{\psi^{n}_{i+1j} - \psi^{n}_{ij}}{h_x} + G \frac{T^{n+1}_{i+1j} - T^{n+1}_{i-1j}}{2h_x}, \\
+\frac{T^{n+1}_{ij} - T^{n}_{ij}}{\tau} &= k \left ( \frac{T^{n+1}_{i+1 j} - 2T^{n+1}_{ij} + T^{n+1}_{i-1 j}}{h_x^2} + \frac{T^{n+1}_{ij+1} - 2T^{n+1}_{ij} + T^{n+1}_{ij-1}}{h_y^2} \right ) - \\
+&- \frac{T^{n}_{i+1j} - T^{n}_{ij}}{h_x} \cdot \frac{\psi^{n}_{ij+1} - \psi^{n}_{ij}}{h_y} + \frac{T^{n}_{ij+1} - T^{n}_{ij}}{h_y} \cdot \frac{\psi^{n}_{i+1j} - \psi^{n}_{ij}}{h_x} + \frac{q_{ij}}{\rho c}, \\
+\omega^n_{ij} &= \frac{\psi^{n+1}_{i+1 j} - 2\psi^{n+1}_{ij} + \psi^{n+1}_{i-1 j}}{h_x^2} + \frac{\psi^{n+1}_{ij+1} - 2\psi^{n+1}_{ij} + \psi^{n+1}_{ij-1}}{h_y^2}.
+\end{flalign*}
+с краевыми условиями
+\begin{flalign*}
+&T^n_{0j} = T^n_{M_xj} = 0, ~j = \overline{0, M_y}, \\
+&T^n_{i0} = T^n_{iM_y} = 0, ~i = \overline{0, M_x}, \\
+&T^0_{ij} = T^0 (x_i, y_j), ~i = \overline{0, M_x}, ~j = \overline{0, M_y}.
+\end{flalign*}
+и всё то же самое для $\omega$ и $\psi$ с заменой $T^0$ на $\omega^0$ и $\psi^0$ соответственно.
+
+\begin{theorem}
+Эта разностная схема приближает дифференциальную задачу \eqref{main_ode} с порядком аппроксимации на решении $O(\tau + h_x^2 + h_y^2)$.
+\end{theorem}
+\begin{proof}
+Полностью по определению расписывать я не буду, потому что будет слишком громоздко, лучше опишу, почему отдельные блоки имеют нужный порядок аппроксимации. На примере первого уравнения:
+\newline
+\newline
+$\dfrac{\omega^{n+1}_{ij} - \omega^{n}_{ij}}{\tau}$ аппроксимирует $\dfrac{\partial \omega}{\partial t}$ с порядком $O(\tau)$, уже было в ранних отчётах.
+\newline
+$\dfrac{\omega^{n+1}_{i+1 j} - 2\omega^{n+1}_{ij} + \omega^{n+1}_{i-1 j}}{h_x^2}$ аппроксимирует $\dfrac{\partial^2 \omega}{\partial x^2}$ с порядком $O(h_x^2)$, аналогично по $y$.
+\newline
+$\dfrac{\omega^{n}_{i+1j} - \omega^{n}_{ij}}{h_x} \cdot \dfrac{\psi^{n}_{ij+1} - \psi^{n}_{ij}}{h_y}$ аппроксимирует $\dfrac{\partial \omega}{\partial x} \dfrac{\partial \psi}{\partial y}$ с порядком $O(h_x h_y) = O(h_x^2 + h_y^2)$, то же самое и для следующего слагаемого. Ну и, наконец
+\newline
+$\dfrac{T^{n+1}_{i+1j} - T^{n+1}_{i-1j}}{2h_x}$ аппроксимирует $\dfrac{\partial T}{\partial x}$ с порядком $O(h_x^2)$.
+\newline
+\newline
+Итого, всего у нас набирается $O(\tau + h_x^2 + h_y^2)$. В случаях $T$ и $\psi$ участвуют точно такие же слагаемые, поэтому всё будет аналогично.
+\end{proof}
+
+
+\section{Алгоритм решения}
+Если в случае явной схемы можно было бы просто выразить все элементы нового слоя по формуле через предыдущий, то здесь так не выйдет. Также не выйдет воспользоваться для решения методом обыкновенной прогонки для трёхдиагональных матриц, потому что здесь многомерный случай. Воспользуемся методом Фурье. Функции
+\begin{equation}\label{eigen_func}
+\psi^{mk} (x,y) = sin(\pi (k+1) x) sin(\pi (m+1) y), ~m,k = 0, \dots, M-2
+\end{equation}
+образуют базис в пространстве функций с нулём на краях $\Omega$, ортогональный относительно скалярного произведения, задаваемого по формуле
+\begin{equation*}
+\langle f,g \rangle = \int\limits_{\Omega}f(x,y) g(x,y) dx dy.
+\end{equation*}
+Аналогом этого склярного произведения для дискретного случая при данных краевых является 
+\begin{equation*}
+\langle f_h,g_h \rangle = \sum\limits_{i = 1}^{M_x-1} \sum\limits_{j=1}^{M_y-1} f_{ij} g_{ij}.
+\end{equation*}
+Также дискретные аналоги функций \eqref{eigen_func}, которые я буду в дальнейшем называть $\psi^{mk}_h$, являются собственными функциями оператора 
+\begin{equation*}
+\Delta u =  \frac{u^{n+1}_{i+1 j} - 2u^{n+1}_{ij} + u^{n+1}_{i-1 j}}{h_x^2} + \frac{u^{n+1}_{ij+1} - 2u^{n+1}_{ij} + u^{n+1}_{ij-1}}{h_y^2} 
+\end{equation*}
+с собственными значениями $-(\lambda^{(m)}_x + \lambda^{(k)}_y)$, где
+\begin{flalign*}
+\lambda^{(m)}_x &= \frac{4}{h_x^2} \sin^2\frac{\pi m h_x}{2}, \\
+\lambda^{(k)}_y &= \frac{4}{h_y^2} \sin^2\frac{\pi k h_y}{2}.
+\end{flalign*}
+Тогда для задачи
+\begin{equation*}
+\dfrac{\partial u}{\partial t} = \nu \left ( \dfrac{\partial^2 u}{\partial x^2} + \dfrac{\partial^2 u}{\partial y^2} \right ) + f(t,x,y)
+\end{equation*}
+разностную схему
+\begin{equation*}
+\frac{u^{n+1}_{ij} - u^{n}_{ij}}{\tau} = \nu \left ( \frac{u^{n+1}_{i+1 j} - 2u^{n+1}_{ij} + u^{n+1}_{i-1 j}}{h_x^2} + \frac{u^{n+1}_{ij+1} - 2u^{n+1}_{ij} + u^{n+1}_{ij-1}}{h_y^2} \right ) + f_{ij}
+\end{equation*}
+можно переписать в виде
+\begin{equation}\label{go_fourier}
+\frac{u^{n+1}_{ij}}{\tau} - \nu \left ( \frac{u^{n+1}_{i+1 j} - 2u^{n+1}_{ij} + u^{n+1}_{i-1 j}}{h_x^2} + \frac{u^{n+1}_{ij+1} - 2u^{n+1}_{ij} + u^{n+1}_{ij-1}}{h_y^2} \right ) = \frac{u^{n}_{ij}}{\tau} + f_{ij} = r_{ij},
+\end{equation}
+где $r_{ij}$ -- это обобщённая правая часть уравнения выше. Я намеренно не пишу у $f$ индекс по времени. Будем считать, что f -- это что-то, что на текущий момент известно, например предыдущий слой, и эти значения можно просто подставить.
+\newline
+\newline
+Мы хотим найти функцию $u^{n+1}_h = \{u^{n+1}_{ij} \}$. Разложим её по базису из $\psi^{mk}_h$:
+\begin{equation*}
+u^{n+1}_{ij} = \sum\limits_{m = 0}^{M_x-2} \sum\limits_{k=0}^{M_y-2} c_{mk} \cdot sin(\pi (k+1) i h_x) sin(\pi (m+1) j h_y)
+\end{equation*}
+и подставим в \eqref{go_fourier}. Не буду подробно расписывать, напишу сразу итог:
+\begin{equation*}
+\sum\limits_{m = 0}^{M_x-2} \sum\limits_{k=0}^{M_y-2} (\frac{1}{\tau} + \nu( \lambda^{(m)}_x + \lambda^{(k)}_y) ) c_{mk} \cdot sin(\pi (k+1) i h_x) sin(\pi (m+1) j h_y) = r_{ij}.
+\end{equation*}
+Теперь, объединив полученный результат по всем $i,j$, можно скалярно умножить обе части уравнения на $\psi^{mk}_h$. Тогда все слагаемые с номером $\neq mk$ уйдут, потому что базис ортогональный, и мы получим:
+\begin{equation*}
+(\frac{1}{\tau} + \nu(\lambda^{(m)}_x + \lambda^{(k)}_y )) c_{mk} \cdot \langle \psi^{mk}_h, \psi^{mk}_h \rangle = \langle r, \psi^{mk}_h \rangle.
+\end{equation*}
+То есть мы теперь можем в явном виде выразить необходимый нам коэффициент:
+\begin{equation}\label{main_eq}
+c_{mk} = \frac{1}{\frac{1}{\tau} + \nu(\lambda^{(m)}_x + \lambda^{(k)}_y )} \cdot \frac{\langle r, \psi^{mk}_h \rangle}{ \langle \psi^{mk}_h, \psi^{mk}_h \rangle}.
+\end{equation}
+А $\frac{\langle r, \psi^{mk}_h \rangle}{ \langle \psi^{mk}_h, \psi^{mk}_h \rangle}$ -- это коэффициент разложения правой части $r$ по дискретному базису из $\psi^{mk}_h$. Находить эти коэффициенты мы умеем, занимались этим в прошлом семестре -- нахождение коэффициентов Фурье в двумерном случае.
+\newline
+\newline
+Собственно, весь алгоритм перехода от слоя $n$ к $n+1$ заключается в формуле \eqref{main_eq}. С помощью уже написанной в прошлом семестре функции \textbf{f2c} находим разложение правой части $r$ на коэффициенты Фурье, затем по формуле \eqref{main_eq} пересчитываем коэффициенты $c_{mk}$ и обратно собираем функцию $u^{n+1}_h$ с помощью функций \textbf{c2d, d2f}.
+\newline
+\newline
+Этот алгоритм подойдёт для функций $\omega, ~T$ из \eqref{main_ode}. Для $\psi$ всё аналогично, но в формуле \eqref{main_eq} не будет $\frac{1}{\tau}$ в знаменателе, потому что в её уравнении нет производной по времени.
+\newline
+\newline
+Важный момент: сначала находим $T^{n+1}$, потом подставляем значения $T^{n+1}$ в уравнение для $\omega$ и находим $\omega^{n+1}$.
+
+
+
+
+
+\section{Описание работы программы}
+Сначала заполняем нулевой слой начальными условиями, затем в цикле по n переходим между слоями от предыдущего к следующему. Слои являются представлениями состояния системы в каждый дискретный момент времени $n\tau$.
+\newline
+\newline
+Внутри каждой итерации сначала по формулам из предыдущего раздела восстанавливаем значение $T^{n+1}$. Затем подставляем значения $T^{n+1}$ в правую часть для $\omega$ и находим $\omega^{n+1}$, и, наконец, через $\omega^{n+1}$ находим $\psi^{n+1}$. Заполнением правых частей занимаются функции \textbf{right\_part\_T},  \textbf{right\_part\_omega},  \textbf{right\_part\_psi}. Шаг перехода к $n+1$ выполняют функция \textbf{step} для $T$ и $\omega$, и \textbf{step\_psi} для $\psi$. 
+\newline
+\newline
+В конце каждой итерации находим найденные значения в файлы \textbf{output\_T.txt}, \textbf{output\_omega.txt}, \textbf{output\_psi.txt}. По этим данным потом можно будет построить визуализацию и посчитать отклонение. В конце читаем данные из этих файлов и считаем норму отклонения как максимум модуля разности между найденными значениями и значениями реальной функции в узлах сетки.
+
+\section{Численные результаты работы}
+
+У задачи в изначальной постановке не получается найти аналитическое решение, поэтому придётся немного модифицировать её условие, чтобы у новой задачи решение всё-таки существовало.
+\newline
+\newline
+Зададим функции $T$ и $\omega$ самостоятельно, превратим $q(x,y)$ в $q(t,x,y)$, в первое уравнение добавим компенсирующую функцию $F(t,x,y)$. Тогда можно подставить в систему уже известные нам $T, ~\omega$ и посчитать необходимые $q, ~F$. Положим
+\begin{flalign*}
+\omega(t,x,y) &= e^{\sin t} \sin(2\pi x) \sin (2\pi y), \\
+T(t,x,y) &= (1 - e^{-t}) \sin(2\pi x) \sin (2\pi y), \\
+\rho = 1, ~c& = 1.
+\end{flalign*}
+Тогда можно вычислить, что
+\begin{flalign*}
+q(t,x,y) &= (e^{-t} + 8\pi^2(1 - e^{-t})) \sin(2\pi x) \sin(2\pi y), \\
+F(t,x,y) &= (\cos t + 8\pi^2) e^{\sin t} \sin(2\pi x) \sin(2\pi y) - 2\pi(1 - e^{-t}) \cos(2\pi x) \sin(2\pi y), \\
+\psi(t,x,y) & = -\frac{1}{8\pi^2} e^{\sin t} \sin(2\pi x) \sin (2\pi y).
+\end{flalign*}
+Начальными условиями по t будут значения самих функций при $t = 0$. Положим все коэффициенты, которые есть в задаче, равными единице, и будем искать решение. Следующие графики демонстрируют поведение нормы максимум модуля разности по всем узлам, поделенной на $(\tau + h_x^2 + h_y^2)$, при увеличении количества узлов разбиения:
+
+Отклонение для $T$:
+
+\includegraphics[scale = 0.6]{T}
+
+Отклонение для $\omega$:
+
+\includegraphics[scale = 0.6]{omega}
+
+Отклонение для $\psi$:
+
+\includegraphics[scale = 0.6]{psi}
+
+Последний хоть и не убывает, но явно упрётся в какую-то границу сверху.
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}

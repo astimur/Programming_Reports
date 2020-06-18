@@ -1,0 +1,200 @@
+% !TEX encoding = Windows Cyrillic
+\documentclass[12pt]{article}
+\pagestyle{plain}
+
+\usepackage{amsmath,amssymb,amsthm,amsfonts,amscd,array,graphicx}
+\usepackage{amsthm}
+\usepackage{graphicx}
+ \graphicspath{{pictures/}}
+ \DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+\usepackage[T2A]{fontenc}
+\usepackage[cp1251]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{mathtools}
+\usepackage{cmap}
+\usepackage{hyperref}
+
+\usepackage[left=3cm,right=3cm, top=3cm, bottom=3cm, bindingoffset=0cm]{geometry}
+
+\DeclareMathOperator*{\argmax}{argmax}
+
+\theoremstyle{definition}
+\newtheorem{exercise}{Задача}
+\newtheorem{defin}{Определение}
+
+\theoremstyle{theorem}
+\newtheorem{theorem}{Теорема}
+\newtheorem{propos}[theorem]{Утверждение}
+\newtheorem{cor}[theorem]{Следствие}
+\newtheorem{lem}[theorem]{Лемма}
+\newtheorem{remark}[theorem]{Замечание}
+\newtheorem{quest}[theorem]{Вопрос}
+
+\title{Отчёт по дифференциальным уравнениям \\ Задача №2}
+
+\begin{document}
+
+\maketitle
+
+\section{Постановка задачи}
+Пусть дана задача Коши:
+\begin{flalign*}
+~~~~&\begin{cases}
+-y''(x) + b(x)y(x) = f(x), x \in [0,1], b(x) \geq 0,\\
+y(0) = y'(1) = 0.
+\end{cases}&
+\end{flalign*}
+ 
+Для этой задачи необходимо на равномерной сетке
+\begin{flalign*}
+\overline{D}_h = \{x_i = ih - \tfrac{h}{2}; ~i = 0, \dots, N; h = \tfrac{2}{2N-1}\}
+\end{flalign*}
+построить на трёхточечном шаблоне разностную схему, имеющую второй порядок сходимости в $L_{2,h}[0,1]$-норме. Результат строго обосновать теоретически.
+
+\section{Доказательство сходимости}
+Положим $f_k = f(x_k), ~b_k = b(x_k)$ и рассмотрим разностную схему
+\begin{flalign*}
+\begin{cases}
+-\frac{y_{k+1} - 2y_k + y_{k-1}}{h^2} + b_k y_k = f_k, ~k = 1, \dots, N-1\\
+y_0 = -y_1,
+\end{cases}
+\end{flalign*}
+Второе краевое $y'(1) = 0$ преобразуем, воспользовавшись формулой Тейлора:
+\begin{flalign*}
+y'(1) = \frac{y(1) - y(1-h)}{h} + O(h) = \frac{y(1) - y(1) + y'(1)h - y''(1)\tfrac{h^2}{2} + O(h^3)}{h} + O(h) = \\
+= - y''(1)\tfrac{h}{2} + O(h^2) = (f(1) - b(1)y(1))\cdot\tfrac{h}{2} + O(h^2)
+\end{flalign*}
+То есть, если нам нужно, чтобы вектор $\{y_k\}$ приближал след функции $y(x)$ со вторым порядком, то можно наложить на него условие вида
+\begin{flalign*}
+\frac{y_N - y_{N-1}}{h} = (f_N - b_Ny_N)\tfrac{h}{2},
+\end{flalign*}
+откуда имеем итоговое второе краевое условие
+\begin{flalign*}
+(b_N + \tfrac{2}{h^2})y_N - \tfrac{2}{h^2} y_{N-1} = f_N
+\end{flalign*}
+Теперь докажем, что такая схема действительно имеет необходимый нам порядок сходимости.
+
+\begin{proof}
+Сперва аппроксимация. Проверяем по определению.
+\begin{flalign*}
+&~~~~~~y(x_k \pm h) = y(x_k) \pm y'(x_k )h + y''(x_k )\tfrac{h^2}{2} \pm y'''(x_k)\tfrac{h^3}{6}+ O(h^4)&
+\end{flalign*}
+\begin{flalign*}
+&~~~ -\frac{y(x_{k+1}) - 2y(x_k) + y(x_{k-1})}{h^2} + b_k y(x_k) - f_k = \left \{b_k = b(x_k), f_k = f(x_k) \right \}  = & \\
+&~~~ =  - \frac{2y''(x_k)\tfrac{h^2}{2} + O(h^4)}{h^2} + b(x_k)y(x_k) - f(x_k) = y''(x_k) + b(x_k)y(x_k) - f(x_k) + O(h^2) = & \\
+&~~~ = 0 + O(h^2) = O(h^2) &
+\end{flalign*}
+Следовательно, в $L_{2,h}$-норме:
+\begin{flalign*}
+\| L_h(y)_{Y_h} - f_h \| = (\sum\limits_{k=1}^{N-1} h*(L_h(y)_{Y_h} - f_h)_k^2)^{\frac{1}{2}} = (\sum\limits_{k=1}^{N-1} h*(O(h^2))^2)^{\frac{1}{2}} \ \leq \\
+\leq (\sum\limits_{k=1}^{N-1} h*Ch^4)^{\frac{1}{2}} \leq Ch^2 \cdot (N-1)h = Ch^2 \frac{2N-2}{2N-1} < Ch^2
+\end{flalign*}
+А значит схема имеет второй порядок аппроксимации на решении исходной задачи в нужной нам норме. Далее устойчивость. Здесь второй порядок задачи, поэтому придётся действовать по определению. Представим уравнение схемы в виде
+\begin{flalign*}
+-\frac{1}{h}\left ( \frac{y_{k+1} - y_k}{h} -  \frac{y_{k} - y_{k-1}}{h} \right )+ b_k y_k = f_k, ~k = 1, \dots, N-1
+\end{flalign*}
+Умножим обе части уравнения на $hy_k$ и просуммируем по $k$. Получим:
+\begin{flalign*}
+-\sum\limits_{k=1}^{N-1}\left ( \frac{y_{k+1} - y_k}{h} -  \frac{y_{k} - y_{k-1}}{h} \right ) y_k + h\sum\limits_{k=1}^{N-1}b_k y_k^2 = h\sum\limits_{k=1}^{N-1} f_k y_k
+\end{flalign*}
+Применив преобразование Абеля к левой части, получим:
+\begin{flalign*}
+\frac{1}{h}\sum\limits_{k=1}^{N-1} (y_{k} - y_{k-1})^2 - \frac{y_N - y_{N-1}}{h}y_{N-1} + h\sum\limits_{k=1}^{N-1}b_k y_k^2 = h\sum\limits_{k=1}^{N-1} f_k y_k
+\end{flalign*}
+Умножим второе краевое условие на $hy_N/2$:
+\begin{flalign*}
+h\frac{b_Ny_N^2}{2} + \frac{y_N - y_{N-1}}{h}y_N = h\frac{f_Ny_N}{2}
+\end{flalign*}
+и прибавим к обеим частям уравнения выше:
+\begin{flalign*}
+\frac{1}{h}\sum\limits_{k=1}^{N} (y_{k} - y_{k-1})^2 + h(\sum\limits_{k=1}^{N-1}b_k y_k^2  +  \frac{b_N y_N^2}{2})= h(\sum\limits_{k=1}^{N-1}f_k y_k + \frac{f_N y_N}{2})
+\end{flalign*}
+Таким образом, получаем, что
+\begin{flalign*}
+\frac{1}{h}\sum\limits_{k=1}^{N} (y_{k} - y_{k-1})^2 + ((by)_h, y_h) = (f_h, y_h).
+\end{flalign*}
+Применим неравенство Пуанкаре:
+\begin{flalign*}
+\sum\limits_{k=1}^{N} y_k^2 \leq \frac{1}{h^2}\sum\limits_{k=1}^{N} (y_{k} - y_{k-1})^2 \Rightarrow \frac{1}{h}\sum\limits_{k=1}^{N} (y_{k} - y_{k-1})^2 \geq (y_h, y_h).
+\end{flalign*}
+Поэтому $(f_h, y_h) - ((by)_h, y_h) \geq (y_h, y_h)$. Считаем, что $b(x) \geq b \geq 0$. Тогда
+\begin{flalign*}
+(b+1)(y_h, y_h) \leq ((by)_h, y_h) + (y_h, y_h) \leq (f_h, y_h).
+\end{flalign*}
+То есть $\| y_h \| \leq \| f \|\cdot\frac{1}{1+b}$, что и означает устойчивость.
+
+Следовательно, по теореме Филиппова решение разностной задачи сходится к решению дифференциальной с порядком 2.
+\end{proof}
+
+\section{Описание алгоритмов решения}
+Далее займёмся нахождением вектора $y_h$.
+\subsection{Случай $b(x) \equiv b = const$}
+
+Если убрать добавок $by_k$ и рассмотреть левую часть как умножение матрицы на вектор $Ay_h$, то собственными векторами и значениями матрицы $A$ в случае моих краевых будут:
+\begin{flalign*}
+\varphi^{(m)} = \{ \sin( \pi (m+0.5) (ih-\tfrac{h}{2})) \}_{i = 0}^{N}, ~~~\lambda^{(m)} = \tfrac{4}{h^2} \sin^2((m+0.5) \tfrac{h}{2})
+\end{flalign*}
+Если вернуть этот добавок, то на диагональ матрицы $A$ добавятся значения $by_k$ и к собственным значениям прибавится $b$. Следовательно, решая систему методом Фурье, получаем
+\begin{flalign*}
+y = \sum\limits_{m=1}^{N} c_m \varphi^{(m)}, ~~\text{где}~~c_m = \frac{(f, \varphi^{(m)})}{\lambda^{(m)} (\varphi^{(m)}, \varphi^{(m)})}
+\end{flalign*}
+
+\subsection{Общий случай}
+Здесь на диагональ изначальной матрицы $A$ прибавятся значения $b_ky_k$ и решать методом Фурье уже не получится. Но $A$ - трёхдиагональная матрица, следовательно, можем воспользоваться методом прогонки.
+Введём обозначения: пусть диагональные элементы матрицы называются $c_0, \dots, c_N$, поддиагональные $-a_1, \dots, -a_N$, наддиагональные $-b_0, \dots, -b_{N-1}$. Строки матрицы с номерами $1, \dots, N-1$ представляют собой саму разностную задачу, поэтому:
+\begin{flalign*}
+a_k = \frac{1}{h^2} = b_k, ~c_k = \frac{2}{h^2} + b_k, ~k = 1, \dots, N-1.
+\end{flalign*}
+Первая же и последняя строки отвечают за краевые условия. Поэтому:
+\begin{flalign*}
+c_0 = 1,~ b_0 = -1, ~a_N = \frac{2}{h^2}, ~c_N = \frac{2}{h^2} + b_N.
+\end{flalign*}
+Далее, по формулам метода прогонки:
+\begin{flalign*}
+\alpha_1 = \frac{b_0}{c_0}, ~~ \alpha_{i+1} = \frac{b_i}{c_i - a_i\alpha_i} \\
+\beta_1 = \frac{f_0}{c_0}, ~~ \beta_{i+1} = \frac{f_i + a_i\beta_i}{c_i - a_i\alpha_i}
+\end{flalign*}
+где $i$ принимает значения $1, \dots, N-1$. Далее последовательно вычисляем значения $y_k$:
+\begin{flalign*}
+y_N = \frac{f_N+a_N\beta_N}{c_N - a_i\alpha_i}, ~~ y_i = \alpha_{i+1}y_{i+1} + \beta_{i+1}, ~i = N-1, \dots, 0.
+\end{flalign*}
+
+\section{Описание программы и численные результаты}
+Одна программа реализует оба метода - Фурье и Прогонка. В первом случае функция 
+\begin{center}
+\textbf{void f2c(double *C, double *f, double* eig\_func, double b, double h, const int N);}
+\end{center}
+вычисляет коэффициенты $C$, далее функция
+\begin{center}
+\textbf{void c2y(double* C, double* y, double h, int N);}
+\end{center}
+собирает вектор $y$.
+Во втором случае функция
+\begin{center}
+\textbf{void solver\_progonka(double* y, double* a, double* b, double* c, double* f, int N);}
+\end{center}
+выполняет решение алгоритмом, который описан в предыдущем пункте.
+\newline
+\newline
+Перейдём к численным результатам работы. Метод Фурье будем проверять в случае $b(x) \equiv 5$ на функции
+\begin{flalign*}
+f(x) = \sin\frac{3\pi}{2}x ~\text{с решением}~~ y(x) = \frac{\sin\frac{3\pi}{2}x}{(\frac{3\pi}{2})^2 + 5}
+\end{flalign*}
+График зависимости ошибки, поделённой на $h^2$, от $N$ в логарифмической шкале:
+\newline
+\newline
+\includegraphics[scale = 0.6]{fourier}
+\newline
+\newline
+Далее метод прогонки. Пусть $b(x) = x$. Тогда для проверки возьмём пару функций
+\begin{flalign*}
+f(x) = \sin\frac{3\pi}{2}x \cdot (x + \frac{9\pi^2}{4}) ~\text{с решением}~~ y(x) = \sin\frac{3\pi}{2}x
+\end{flalign*}
+График зависимости ошибки, поделённой на $h^2$, от $N$ в логарифмической шкале:
+\newline
+\newline
+\includegraphics[scale = 0.6]{progonka}
+
+
+\end{document}

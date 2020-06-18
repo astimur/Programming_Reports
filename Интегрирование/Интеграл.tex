@@ -1,0 +1,209 @@
+% !TEX encoding = Windows Cyrillic
+\documentclass[12pt]{article}
+\pagestyle{plain}
+
+\usepackage{amsmath,amssymb,amsthm,amsfonts,amscd,array,graphicx}
+\usepackage{amsthm}
+\usepackage{graphicx}
+ \graphicspath{{pictures/}}
+ \DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+\usepackage[T2A]{fontenc}
+\usepackage[cp1251]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{mathtools}
+\usepackage{cmap}
+\usepackage{hyperref}
+
+\usepackage[left=3cm,right=3cm, top=3cm, bottom=3cm, bindingoffset=0cm]{geometry}
+
+\DeclareMathOperator*{\argmax}{argmax}
+
+\theoremstyle{definition}
+\newtheorem{exercise}{Задача}
+\newtheorem{defin}{Определение}
+
+\theoremstyle{theorem}
+\newtheorem{theorem}{Теорема}
+\newtheorem{propos}[theorem]{Утверждение}
+\newtheorem{cor}[theorem]{Следствие}
+\newtheorem{lem}[theorem]{Лемма}
+\newtheorem{remark}[theorem]{Замечание}
+\newtheorem{quest}[theorem]{Вопрос}
+
+\title{Отчёт по Интегрированию}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Квадратурная Формула Ньютона-Котеса}
+\subsection{Постановка задачи и теоретическое обоснование}
+Пусть $-\infty < a < b < \infty$, и на отрезке $[a,b]$ задана функция $f: [a,b] \rightarrow \mathbb{R}$, т.ч. $f \in \mathbb{C}^{(n+1)}$. Требуется решить задачу приближённого численного интегрирования, а именно построить квадратурную формулу Ньютона-Котеса $S_n(f)$, которая по значениям функции в равноотстоящих узлах $\{x_i =  a + i(b-a)\}_{i=0}^{n}$ восстанавливает значение интеграла, т.е. 
+\begin{equation*}
+S_n(f) = \sum\limits_{i=0}^{n} c_i f(x_i) \approx \int\limits_a^b p(x)f(x)dx = I(f)
+\end{equation*}
+Весовую функцию $p(x)$ положим равной единице. Функцию $f(x)$ можно приблизить с помощью интерполяционного многочлена Лагранжа, тогда:
+\begin{equation*}
+\int\limits_a^b f(x)dx \approx \int\limits_a^b \sum\limits_{i=0}^{n} f(x_i)\prod\limits_{j \neq i} \frac{(x - x_j)}{(x_i - x_j)} dx = \sum\limits_{i=0}^{n} f(x_i) \int\limits_a^b \prod\limits_{j \neq i} \frac{(x - x_j)}{(x_i - x_j)} dx 
+\end{equation*}
+Положим
+\begin{equation}
+c_i = \int\limits_a^b \prod\limits_{j \neq i} \frac{(x - x_j)}{(x_i - x_j)} dx
+\end{equation}
+Оценка погрешности квадратурной формулы в этой ситуации имеет вид:
+
+\begin{equation*}
+R_n = \vert I(f) - S_n(f) \vert \leq \frac{\| f^{(n+1)} \| }{(n+1)!}\cdot \int \limits_a^b \vert \omega_{n+1}(x) \vert dx
+\end{equation*}
+
+Тогда для n = 3:
+\begin{equation*}
+R_3 (f) = \vert I(f) - S_3(f) \vert \leq \|f^{(4)} \| \frac{(b-a)^5}{480}
+\end{equation*}
+Разобьём отрезок $[a,b]$ на $\{[a_k, b_k]\}$, т.ч. $a_1 = a,~ b_{n} = b,~ b_{k-1} = a_k, k = \overline{2, n-1}.$
+
+$ \vert b_k - a_k \vert = \frac{b-a}{n}.$ Тогда:
+
+\begin{equation*}
+I(f) = \int\limits_a^b f(x)dx =  \sum\limits_{k=1}^{n} \int\limits_{a_k}^{b_k} f(x)dx = \sum\limits_{k=1}^{n} I_k(f)
+\end{equation*}
+Норму ошибки можно переписать в виде:
+\begin{equation*}
+\begin{aligned}
+\vert I(f) - S(f) \vert = \vert \sum\limits_{k=1}^{n} (I_k(f) - S_k(f))\vert \leq \sum\limits_{k=1}^{n} \vert I_k(f) - S_k(f)\vert \leq \sum\limits_{k=1}^{n} \|f^{(4)} \| \frac{(b_k - a_k)^5}{480} = \\
+= \sum\limits_{k=1}^{n} \|f^{(4)} \| \frac{((b-a)/n)^5}{480} = \frac{\|f^{(4)} \|(b-a)^5}{480 \cdot n^4}
+\end{aligned}
+\end{equation*}
+
+Значит идея построения составной квадратуры, то есть разбиения отрезка на части и построения на каждой своей квадратуры, будет вести к сходимости общей квадратурной формулы к точному значению интеграла.
+
+\subsection{Алгоритм решения}
+Выполняем разбиение отрезка $[a,b]$ на n подотрезков, как было описано в предыдущем пункте. Для каждого из них строим квадратурную формулу по четырём равноотстоящим узлам:
+\begin{equation*}
+S_k(f) = \sum\limits_{i=0}^{3} c_{ik} f(x_{ik}), ~\text{где}~ c_{ik} = \int\limits_{a_k}^{b_k} \prod\limits_{j \neq i} \frac{(x - x_j)}{(x_i - x_j)} dx,~ i = 0,1,2,3.
+\end{equation*}
+Эти интегралы можно в явном виде посчитать, откуда:
+\begin{equation*}
+c_{0k} =  \frac{b_k - a_k}{8}, ~~c_{1k} = \frac{3(b_k - a_k)}{8}, ~~c_{2k} =  \frac{3(b_k - a_k)}{8}, ~~c_{3k} = \frac{b_k - a_k}{8}
+\end{equation*}
+Далее просто складываем значения и при некотором n получаем необходимую степень приближения.
+\begin{equation*}
+S(f) = \sum\limits_{k=1}^{n} S_k(f)
+\end{equation*}
+
+\subsection{Описание работы программы}
+
+При запуске программы первым из входного файла \textbf{input.txt} считывается значение \textbf{n} - количество отрезков разбиения и границы отрезка \textbf{a} и \textbf{b} (\textbf{a} < \textbf{b}). Затем вызывается функция
+\begin{center}
+\textbf{double integration\_func(const int n, const double a, const double b);}
+\end{center}
+Она производит все операции, описанные в предыдущем пункте. Далее значение, возвращённое этой функцией, выводится на экран.
+
+
+
+
+\section{Квадратура Гаусса}
+
+\subsection{Постановка задачи и теоретическое обоснование}
+Пусть даны функция $f \in \mathbb{C}^{(4)}$ и отрезок $[a,b]$. Требуется построить квадратуру для поиска $\int\limits_a^b f(x)dx$, точную для многочленов максимально возможной степени. (Весовую функцию в данной ситуации полагаем равной единице).
+
+\begin{theorem}
+Пусть $\psi_n$ - ортогональный многочлен степени n на отрезке $[a,b]$ с весовой функцией $p(x) \equiv 1$. Пусть $a < x_0 < \dots < x_{n-1} < b$ - его корни и $c_0, \dots, c_{n-1}$ - коэффициенты квадратурной формулы $S_n$, т.ч. $I(P_{n-1}) = S_n(P_{n-1}) ~\forall~ P_{n-1}.$ Тогда $I(P_{2n-1}) = S_n(P_{2n-1}) ~\forall~ P_{2n-1}.$ Причём более точную квадратуру построить нельзя. 
+\end{theorem}
+
+\begin{theorem}
+Для квадратуры Гаусса, точной для многочленов степени $2n-1$, верна следующая оценка погрешности: 
+\begin{equation}
+R_n = \vert I(f) - S_n(f) \vert \leq \frac{ \| f^{(2n)}\|}{(2n)!}\cdot 2^{1-2n}\cdot \left (\frac{b-a}{2} \right)^{2n} \cdot \left( \int\limits_a^b \vert p \vert dx + \sum\limits_{i=0}^n \vert c_i \vert \right)
+\end{equation}
+\end{theorem}
+
+Ортогональными многочленами на [-1, 1] с весом 1 являются многочлены Лежандра. Перенося их на отрезок $[a,b]$ с помощью формулы замены переменной получаем ортогональный многочлен на $[a,b]$. Далее находим его корни, узлы построения нашей квадратуры, и из условий точности квадратуры на многочленах можно решив СЛУ найти коэффициенты $c_i.$
+
+\subsection{Алгоритм решения}
+
+Выполняем разбиение отрезка $[a,b]$ на n подотрезков аналогично первой задаче. Для каждого из них строим Квадратуру Гаусса в четырёх точках и суммируем результаты. Для начала, многочлен Лежандра 4-й степени на $[-1, 1]$:
+
+\begin{equation*}
+P_4(y) = \frac{1}{8} (35y^4 - 30y^2 + 3)
+\end{equation*}
+
+Его корни на $[-1, 1]$:
+\begin{equation*}
+y_0 = -\sqrt{\frac{3}{7} + \frac{2\sqrt{6/5}}{7}} = -y_3,~y_1 = -\sqrt{\frac{3}{7} - \frac{2\sqrt{6/5}}{7}} = -y_2
+\end{equation*}
+Используя формулу $x_{ik} = \frac{b_k-a_k}{2}\cdot y_i + \frac{b_k+a_k}{2}$ можно перенести эти корни на любой из подотрезков. Коэффиценты $c_i$ симметричны, т.е. $c_i = c_{3-i}$, поэтому составлять систему на них можно из двух уравений:
+
+\begin{center}
+$\begin{cases}
+c_{0k} + c_{1k} + c_{2k} + c_{3k} = 2c_{0k} + 2c_{1k} = \int\limits_{a_k}^{b_k} x^0 dx = b_k - a_k \\
+c_{0k}x_{0k}^2 + c_{1k}x_{1k}^2 + c_{2k}x_{2k}^2 + c_{3k}x_{3k}^2 = c_{0k}(x_{0k}^2 + x_{3k}^2) + c_{1k}(x_{1k}^2+x_{2k}^2) = \int\limits_{a_k}^{b_k} x^2 dx = \frac{b_k^3-a_k^3}{3}\\
+\end{cases}$
+\end{center}
+Отсюда
+
+\begin{equation*}
+c_{1k} = \frac{b_k-a_k}{2(x_{1k}^2 + x_{2k}^2 - x_{0k}^2 - x_{3k}^2)} \cdot \left ( \frac{2(b_k^2 + a_kb_k + a_k^2)}{3} - (x_{0k}^2+x_{3k}^2) \right ), ~ c_{0k} = \frac{b_k-a_k}{2} - c_{1k}
+\end{equation*}
+
+\begin{equation*}
+c_{2k} = c_{1k}, ~~c_{3k} = c_{0k}
+\end{equation*}
+
+И теперь можем собрать все квадратуры:
+
+\begin{equation*}
+S_k(f) = c_{0k}f(x_{0k}) + c_{1k}f(x_{1k}) + c_{2k}f(x_{2k}) + c_{3k}f(x_{3k}), ~~ S(f) = \sum\limits_{k = 1}^{n} S_k(f)
+\end{equation*}
+
+
+\subsection{Описание работы программы}
+
+При запуске программы первым из входного файла \textbf{input.txt} считывается значение \textbf{n} - количество отрезков разбиения и границы отрезка \textbf{a} и \textbf{b} (\textbf{a} < \textbf{b}). Затем вызывается функция
+\begin{center}
+\textbf{double integration\_func(const int n, const double a, const double b);}
+\end{center}
+Она производит все операции, описанные в предыдущем пункте. Далее значение, возвращённое этой функцией, выводится на экран.
+
+
+
+\section{Двумерная задача}
+
+\subsection{Постановка задачи и алгоритм решения}
+
+Пусть на квадрате $[0,1] \times [0,1]$ задана функция $f: \mathbb{R} \times \mathbb{R} \rightarrow \mathbb{R}.$ Будем интегрировать её по этому квадрату. Для этого разбиваем квадрат на тругольники и считаем интеграл по приведённому ниже алгоритму.
+
+Равномерно разбиваем осевые отрезки на \textbf{n} подотрезков длиной $\frac{1}{n}$ каждый. Проводя через каждую из точек линии, параллельные второй оси, получаем $n^2$ квадратов размера $1/n \times 1/n.$ Проводя во всех квадратах главные диагонали, получаем триангуляцию квадрата $[0,1] \times [0,1]$, содержащую $2n^2$ треугольников, $3n^2 + 2n$ рёбер, $(n+1)^2$ вершин.
+
+Чтобы вычислить значение интеграла, необходимо проинтегрировать функцию по всем треугольникам, где интеграл по треугольнику аппроксимируется по формуле:
+
+\begin{equation*}
+\iint\limits_{\bigtriangleup} f(x,y) dxdy \approx \frac{f(M_1) +f(M_2) + f(M_3)}{3}\cdot \left | \bigtriangleup \right |
+\end{equation*}
+где $M_1, M_2, M_3$ - середины рёбер треугольника. Из свойства аддитивности интеграла имеем, что интеграл по всему квадрату находится как сумма интегралов по всем треугольникам:
+
+\begin{equation*}
+\iint\limits_{[0,1]^2} f(x,y) dxdy \approx \sum\limits_{\bigtriangleup} \iint\limits_{\bigtriangleup} f(x,y) dxdy
+\end{equation*}
+
+
+\subsection{Описание работы программы}
+
+При запуске программы в первую очередь с клавиатуры считывается значение \textbf{n} - количество отрезков разбиения. Далее запускается функция
+\begin{center}
+\textbf{void file\_fill(FILE* out\_triangles, const int n);}
+\end{center}
+которая записывает в файл \textbf{output.txt} номера всех вершин и их координаты, номера всех треугольников с номерами вершин, которые им принадлежат и номера всех рёбер с номерами их вершин.
+
+Далее вершины и треугольники считываются и записываются в массивы \textbf{nodes} и \textbf{triangles}. Запускается функция
+
+\begin{center}
+\textbf{double integration\_func(const int n, double* nodes, int* triangles);}
+\end{center}
+которая считает интегралы по треугольникам, складывает их и возвращает интеграл по квадрату как сумму интегралов по треугольникам. Полученное значение выводится на экран.
+
+
+\end{document}

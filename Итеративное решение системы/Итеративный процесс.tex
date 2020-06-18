@@ -1,0 +1,105 @@
+% !TEX encoding = Windows Cyrillic
+\documentclass[12pt]{article}
+\pagestyle{plain}
+
+\usepackage{amsmath,amssymb,amsthm,amsfonts,amscd,array,graphicx}
+\usepackage{amsthm}
+\usepackage{graphicx}
+ \graphicspath{{pictures/}}
+ \DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+\usepackage[T2A]{fontenc}
+\usepackage[cp1251]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{mathtools}
+\usepackage{cmap}
+\usepackage{hyperref}
+
+\usepackage[left=3cm,right=3cm, top=3cm, bottom=3cm, bindingoffset=0cm]{geometry}
+
+\DeclareMathOperator*{\argmax}{argmax}
+
+\theoremstyle{definition}
+\newtheorem{exercise}{Задача}
+\newtheorem{defin}{Определение}
+
+\theoremstyle{theorem}
+\newtheorem{theorem}{Теорема}
+\newtheorem{propos}[theorem]{Утверждение}
+\newtheorem{cor}[theorem]{Следствие}
+\newtheorem{lem}[theorem]{Лемма}
+\newtheorem{remark}[theorem]{Замечание}
+\newtheorem{quest}[theorem]{Вопрос}
+
+\title{Отчёт}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Постановка и решение задачи}
+Пусть задана матрица $A \in Mat_{n\times n}, A = A^T > 0$ и вектор $b \in \mathbb{R}^n$, и поставлена задача решить систему линейных уравнений $Ax = b$. Для того, чтобы сделать это максимально быстро, воспользуемся итерационным методом решения СЛУ, задаваемым уравнением:
+
+\begin{equation}\label{iter_proc}
+\frac{x^{k+1} - x^{k}}{\tau_{k+1}} + Ax^k = b
+\end{equation}
+
+\begin{theorem}
+Пусть $A = A^T > 0, ~\lambda(A) \in [m; M], ~m > 0$. Тогда циклический итерационный процесс \hyperref[iter_proc]{(1)} с параметрами $\tau_1, \dots \tau_N$ будет сходиться наилучшим образом при выборе 
+\begin{equation*}
+\tau_{k}^{-1} = \frac{M+m}{2} + \frac{M-m}{2} \cdot\cos \frac{\pi(2k-1)}{2N}, ~k = 1, \dots, N, ~\text{причём}
+\end{equation*}
+\begin{equation*}
+\| x^N - x \|_2 \leq \frac{2q_1^N}{1+q_1^{2N}} \cdot \| x^0 - x \|_2, ~\text{где}~ q_1 = \frac{\sqrt{M} - \sqrt{m}}{\sqrt{M} + \sqrt{m}} < 1,
+\end{equation*}
+и сходимость будет при любом начальном условии.
+\end{theorem}
+
+Необходимое уточнение: величины $\tau_k$ необходимо взять в другом порядке, потому что иначе из-за вычислительной погрешности решение не будет сходиться. Делать это надо исходя из того, что норма ошибки на каждом этапе не должна возрастать:
+\begin{equation*}
+\tau_1: \max_\lambda |1 - \tau_1\lambda| \leq 1
+\end{equation*}
+\begin{equation*}
+\tau_2: \max_\lambda |(1 - \tau_1\lambda)(1 - \tau_2\lambda)| \leq 1
+\end{equation*}
+\begin{equation*}
+\dots
+\end{equation*}
+\begin{equation*}
+\tau_N: \max_\lambda |(1 - \tau_1\lambda) \dots (1 - \tau_N\lambda)| \leq 1
+\end{equation*}
+
+Также отдельно найдём решение системы с помощью метода Жордана с выбором наибольшего элемента по строке, чтобы оценивать решение, полученное итерационным методом.
+
+\newpage
+\section{Описание работы программы}
+При запуске программа считывает с клавиатуры способ задания матрицы А: 1 - из файла, 2 - по формуле, и размерность задачи \textbf{n}. После этого вызывается функция 
+\begin{center}
+\textbf{int input(double* A, double* b, int input\_method, int n, FILE* in);}
+\end{center}
+которая заполняет матрицу А и вектор свободных членов b указанным способом. Далее запускается функция
+\begin{center}
+\textbf{int solve\_jordan(int n, double* A, double* b, double* x, int* N);}
+\end{center}
+которая находит решение СЛУ методом Жордана. Следующим шагом функция
+\begin{center}
+\textbf{void tau\_filling(double* tau, double m, double M, int N);}
+\end{center}
+заполняет массив \textbf{tau} значениями $\tau_k$ в правильном порядке. И, наконец, функция 
+\begin{center}
+\textbf{int solve\_iteratively(int n, int N, \dots, double* help\_vector);}
+\end{center}
+находит решение описанным в первом пункте методом.
+
+
+
+\end{document}
+
+
+
+
+
+
+
